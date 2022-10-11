@@ -12,7 +12,7 @@
 //
 // handling the syscalls. will call do_syscall() defined in kernel/syscall.c
 //
-static void handle_syscall(trapframe *tf) {
+static long handle_syscall(trapframe *tf) {
   // tf->epc points to the address that our computer will jump to after the trap handling.
   // for a syscall, we should return to the NEXT instruction after its handling.
   // in RV64G, each instruction occupies exactly 32 bits (i.e., 4 Bytes)
@@ -22,7 +22,8 @@ static void handle_syscall(trapframe *tf) {
   // kernel/syscall.c) to conduct real operations of the kernel side for a syscall.
   // IMPORTANT: return value should be returned to user app, or else, you will encounter
   // problems in later experiments!
-  panic( "call do_syscall to accomplish the syscall and lab1_1 here.\n" );
+  return do_syscall(tf->regs.a0,tf->regs.a1,tf->regs.a2,0,0,0,0,0);
+  //panic( "call do_syscall to accomplish the syscall and lab1_1 here.\n" );
 
 }
 
