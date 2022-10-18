@@ -13,7 +13,7 @@
 int do_user_call(uint64 sysnum, uint64 a1, uint64 a2, uint64 a3, uint64 a4, uint64 a5, uint64 a6,
                  uint64 a7) {
   int ret;
-
+  
   // before invoking the syscall, arguments of do_user_call are already loaded into the argument
   // registers (a0-a7) of our (emulated) risc-v machine.
   asm volatile(
@@ -42,6 +42,24 @@ int printu(const char* s, ...) {
   // make a syscall to implement the required functionality.
   return do_user_call(SYS_user_print, (uint64)buf, n, 0, 0, 0, 0, 0);
 }
+
+//
+// print_backtrace() supports user/lab1_challenge1
+//
+int print_backtrace(uint64 n){
+  /*
+  uint64 tmp = 0;
+  asm volatile (
+    "sd s0,%0" 
+    :"=m"(tmp) //输出部分
+    ://输入部分
+    : "memory"); //破坏描述部分
+  printu("%x",tmp);
+  */
+  return do_user_call(SYS_user_print_backtrace, n, 0, 0, 0, 0, 0, 0);
+}
+
+
 
 //
 // applications need to call exit to quit execution.
