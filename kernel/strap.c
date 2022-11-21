@@ -20,12 +20,12 @@ static void handle_syscall(trapframe *tf) {
   // for a syscall, we should return to the NEXT instruction after its handling.
   // in RV64G, each instruction occupies exactly 32 bits (i.e., 4 Bytes)
   tf->epc += 4;
-
   // TODO (lab1_1): remove the panic call below, and call do_syscall (defined in
   // kernel/syscall.c) to conduct real operations of the kernel side for a syscall.
   // IMPORTANT: return value should be returned to user app, or else, you will encounter
   // problems in later experiments!
-  panic( "call do_syscall to accomplish the syscall and lab1_1 here.\n" );
+  tf->regs.a0 = do_syscall(tf->regs.a0,tf->regs.a1,tf->regs.a2,tf->regs.a3,tf->regs.a4,tf->regs.a5,tf->regs.a6,tf->regs.s0);
+  //panic( "call do_syscall to accomplish the syscall and lab1_1 here.\n" );
 
 }
 
@@ -40,7 +40,9 @@ void handle_mtimer_trap() {
   // TODO (lab1_3): increase g_ticks to record this "tick", and then clear the "SIP"
   // field in sip register.
   // hint: use write_csr to disable the SIP_SSIP bit in sip.
-  panic( "lab1_3: increase g_ticks by one, and clear SIP field in sip register.\n" );
+  ++g_ticks;
+  write_csr(sip,0);
+  //panic( "lab1_3: increase g_ticks by one, and clear SIP field in sip register.\n" );
 
 }
 
