@@ -27,6 +27,7 @@ process* current = NULL;
 // points to the first free page in our simple heap. added @lab2_2
 uint64 g_ufree_page = USER_FREE_ADDRESS_START;
 
+//uint64 user_stack_bottom = USER_STACK_TOP - PGSIZE;
 //
 // switch to a user-mode process
 //

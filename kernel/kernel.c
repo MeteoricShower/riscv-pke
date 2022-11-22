@@ -63,6 +63,8 @@ void load_user_program(process *proc) {
   user_vm_map((pagetable_t)proc->pagetable, USER_STACK_TOP - PGSIZE, PGSIZE, user_stack,
          prot_to_type(PROT_WRITE | PROT_READ, 1));
 
+
+
   // map trapframe in user space (direct mapping as in kernel space).
   user_vm_map((pagetable_t)proc->pagetable, (uint64)proc->trapframe, PGSIZE, (uint64)proc->trapframe,
          prot_to_type(PROT_WRITE | PROT_READ, 0));

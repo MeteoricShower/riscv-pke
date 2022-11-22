@@ -13,6 +13,7 @@
 #include "memlayout.h"
 #include "spike_interface/spike_utils.h"
 
+uint64 user_stack_bottom = USER_STACK_TOP - PGSIZE; //不让改process.c
 //
 // handling the syscalls. will call do_syscall() defined in kernel/syscall.c
 //
@@ -66,10 +67,17 @@ void handle_user_page_fault(uint64 mcause, uint64 sepc, uint64 stval) {
       //   cnt ++;
       //   stval += PGSIZE;
       // }
-      void* new_page = alloc_page();
-      memset(new_page, 0, PGSIZE);
+      // sprint("%lx\n",user_stack_bottom);
+      // sprint("%lx\n",g_ufree_page);
+      if(stval < user_stack_bottom && stval > user_stack_bottom - PGSIZE){
+        void* new_page = alloc_page();
+        memset(new_page, 0, PGSIZE);
       // map_pages((pagetable_t)current->pagetable, USER_STACK_TOP - cnt * PGSIZE, PGSIZE, (uint64)new_page, prot_to_type(PROT_WRITE | PROT_READ, 1));
-      map_pages((pagetable_t)current->pagetable, ROUNDDOWN(stval,PGSIZE), PGSIZE, (uint64)new_page, prot_to_type(PROT_WRITE | PROT_READ, 1));
+        map_pages((pagetable_t)current->pagetable, ROUNDDOWN(stval,PGSIZE), PGSIZE, (uint64)new_page, prot_to_type(PROT_WRITE | PROT_READ, 1));
+        user_stack_bottom -= PGSIZE;
+      }
+      else if(stval >= g_ufree_page) panic("this address is not available!");
+      
 
       //panic( "You need to implement the operations that actually handle the page fault in lab2_3.\n" );
       
