@@ -90,6 +90,9 @@ int free_process( process* proc );
 // fork a child from parent
 int do_fork(process* parent);
 
+// yield current process
+// void do_yield();
+
 // current running process
 extern process* current;
 
