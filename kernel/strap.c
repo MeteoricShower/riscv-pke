@@ -58,6 +58,9 @@ void handle_user_page_fault(uint64 mcause, uint64 sepc, uint64 stval) {
   uint64 cnt = 1;
   switch (mcause) {
     case CAUSE_STORE_PAGE_FAULT:
+    {
+
+    
       // TODO (lab2_3): implement the operations that solve the page fault to
       // dynamically increase application stack.
       // hint: first allocate a new physical page, and then, maps the new page to the
@@ -75,6 +78,7 @@ void handle_user_page_fault(uint64 mcause, uint64 sepc, uint64 stval) {
       //panic( "You need to implement the operations that actually handle the page fault in lab2_3.\n" );
       
       break;
+    }
     default:
       sprint("unknown page fault.\n");
       break;
