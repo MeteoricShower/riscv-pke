@@ -17,6 +17,7 @@
 #include "memlayout.h"
 #include "sched.h"
 #include "spike_interface/spike_utils.h"
+#include "util/functions.h"
 
 //Two functions defined in kernel/usertrap.S
 extern char smode_trap_vector[];
@@ -193,7 +194,9 @@ int do_fork( process* parent)
         // address region of child to the physical pages that actually store the code
         // segment of parent process.
         // DO NOT COPY THE PHYSICAL PAGES, JUST MAP THEM.
-        panic( "You need to implement the code segment mapping of child in lab3_1.\n" );
+        //panic( "You need to implement the code segment mapping of child in lab3_1.\n" );
+        //把父进程代码段的虚拟地址的映射加入子进程的pagetable中
+        map_pages(child->pagetable, parent->mapped_info[i].va, parent->mapped_info[i].npages * PGSIZE, (uint64)lookup_pa(parent->pagetable, parent->mapped_info[i].va), prot_to_type(PROT_READ | PROT_EXEC, 1));
 
         // after mapping, register the vm region (do not delete codes below!)
         child->mapped_info[child->total_mapped_region].va = parent->mapped_info[i].va;
