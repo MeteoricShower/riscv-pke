@@ -102,6 +102,7 @@ process* alloc_process() {
     return 0;
   }
 
+
   // init proc[i]'s vm space
   procs[i].trapframe = (trapframe *)alloc_page();  //trapframe, used to save context
   memset(procs[i].trapframe, 0, sizeof(trapframe));
@@ -139,6 +140,15 @@ process* alloc_process() {
   procs[i].mapped_info[2].va = (uint64)trap_sec_start;
   procs[i].mapped_info[2].npages = 1;
   procs[i].mapped_info[2].seg_type = SYSTEM_SEGMENT;
+
+  // // map user stack in userspace
+  // user_vm_map((pagetable_t)procs[i].pagetable, g_ufree_page, PGSIZE,
+  //   (uint64)alloc_page(), prot_to_type(PROT_WRITE | PROT_READ, 1));
+  // g_ufree_page += PGSIZE;
+  // procs[i].mapped_info[4].va = g_ufree_page;
+  // procs[i].mapped_info[4].npages = 1;
+  // procs[i].mapped_info[4].seg_type = DATA_SEGMENT;
+  // sprint("111");
 
   sprint("in alloc_proc. user frame 0x%lx, user stack 0x%lx, user kstack 0x%lx \n",
     procs[i].trapframe, procs[i].trapframe->regs.sp, procs[i].kstack);
@@ -196,8 +206,8 @@ int do_fork( process* parent)
         // DO NOT COPY THE PHYSICAL PAGES, JUST MAP THEM.
         //panic( "You need to implement the code segment mapping of child in lab3_1.\n" );
         //把父进程代码段的虚拟地址的映射加入子进程的pagetable中
-        map_pages(child->pagetable, parent->mapped_info[i].va, parent->mapped_info[i].npages * PGSIZE, (uint64)lookup_pa(parent->pagetable, parent->mapped_info[i].va), prot_to_type(PROT_READ | PROT_EXEC, 1));
-
+        user_vm_map(child->pagetable, parent->mapped_info[i].va, parent->mapped_info[i].npages * PGSIZE, (uint64)lookup_pa(parent->pagetable, parent->mapped_info[i].va), prot_to_type(PROT_READ | PROT_EXEC, 1));
+        sprint("do_fork map code segment at pa:%lx of parent to child at va:%lx.\n", lookup_pa(parent->pagetable, parent->mapped_info[i].va), parent->mapped_info[i].va);
         // after mapping, register the vm region (do not delete codes below!)
         child->mapped_info[child->total_mapped_region].va = parent->mapped_info[i].va;
         child->mapped_info[child->total_mapped_region].npages =
@@ -205,6 +215,20 @@ int do_fork( process* parent)
         child->mapped_info[child->total_mapped_region].seg_type = CODE_SEGMENT;
         child->total_mapped_region++;
         break;
+      case DATA_SEGMENT:
+        user_vm_map(child->pagetable, parent->mapped_info[i].va, PGSIZE, (uint64)alloc_page(), prot_to_type(PROT_READ | PROT_WRITE, 1));
+
+        // after mapping, register the vm region
+        child->mapped_info[child->total_mapped_region].va = parent->mapped_info[i].va;
+        child->mapped_info[child->total_mapped_region].npages =
+          parent->mapped_info[i].npages;
+        child->mapped_info[child->total_mapped_region].seg_type = DATA_SEGMENT;
+        child->total_mapped_region++;
+        
+        
+        break;
+        
+
     }
   }
 
@@ -216,4 +240,16 @@ int do_fork( process* parent)
   return child->pid;
 }
 
-
+int do_wait(int pid){
+  if(pid < -1) return -1;
+  int i = 0;
+  for (; i < NPROC; i++)
+    if (procs[i].pid == pid)
+      break;
+  if (procs[i].parent != current && pid != -1)
+    return -1;
+  current->wait_pid = pid;
+  current->status = BLOCKED;
+  schedule();
+  return 0;
+}
