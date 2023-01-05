@@ -92,7 +92,12 @@ process* alloc_process();
 int free_process( process* proc );
 // fork a child from parent
 int do_fork(process* parent);
-
+//new a semaphore
+int do_sem_new(int init_sem);
+//P operation of semaphore
+void do_sem_P(int sem);
+//V operation of semaphore
+void do_sem_V(int sem);
 // yield current process
 // void do_yield();
 

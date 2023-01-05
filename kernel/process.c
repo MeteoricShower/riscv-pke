@@ -36,6 +36,10 @@ process* current = NULL;
 // points to the first free page in our simple heap. added @lab2_2
 uint64 g_ufree_page = USER_FREE_ADDRESS_START;
 
+//added @lab3_challenge2
+int semaphore[32];
+process* blocked_queue[32];
+int cur_sem;
 //
 // switch to a user-mode process
 //
@@ -216,4 +220,38 @@ int do_fork( process* parent)
   return child->pid;
 }
 
+
+int do_sem_new(int init_sem){
+  if(cur_sem == 31) return -1;
+  semaphore[cur_sem] = init_sem;
+  return cur_sem++;
+}
+
+void do_sem_P(int sem){
+  semaphore[sem]--;
+  if(semaphore[sem] < 0){
+    current -> status = BLOCKED;
+    current -> queue_next = NULL;
+    if(blocked_queue[sem] == NULL) blocked_queue[sem] = current;
+    else{
+      process * p = blocked_queue[sem];
+      while(p -> queue_next) p = p -> queue_next;
+      p -> queue_next = current;
+    }
+    schedule();
+  }
+  return;
+}
+
+void do_sem_V(int sem){
+  semaphore[sem]++;
+  if(semaphore[sem] <= 0){
+    process* p = blocked_queue[sem];
+    blocked_queue[sem] = p -> queue_next;
+    p -> status = READY;
+    p -> queue_next = NULL;
+    insert_to_ready_queue(p);
+  }
+  return;
+}
 
