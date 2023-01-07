@@ -219,6 +219,43 @@ elf_status elf_load(elf_ctx *ctx) {
       return EL_EIO;
   }
 
+    elf_sect_header elf_sh;
+
+    off = ctx->ehdr.shoff + ctx->ehdr.shstrndx * sizeof(elf_sh);
+    if (elf_fpread(ctx, (void *)&elf_sh, sizeof(elf_sh), off) != sizeof(elf_sh))     
+        return EL_EIO;
+
+
+    char elf_shstrtab[elf_sh.size];
+
+    if (elf_fpread(ctx, elf_shstrtab, elf_sh.size, elf_sh.offset) != elf_sh.size)
+        return EL_EIO;
+
+    uint64 symtab_size = sizeof(Elf_symtab) * 32;
+    char elf_symtab[symtab_size];
+
+    uint64 strtab_size = 256;
+    char elf_strtab[strtab_size];
+
+    process *p = ((elf_info *)ctx->info)->p;
+    for(int i = 0, off = ctx->ehdr.shoff; i < ctx->ehdr.shnum; i++, off += sizeof(elf_sh)) {
+        if (elf_fpread(ctx, (void *)&elf_sh, sizeof(elf_sh), off) != sizeof(elf_sh)) return EL_EIO;
+
+        if (!strcmp(elf_shstrtab + elf_sh.name, ".debug_line")) {
+
+            p->debugline = (char *)elf_alloc_mb(ctx, ph_addr.vaddr+ph_addr.memsz, ph_addr.vaddr+ph_addr.memsz, elf_sh.size);
+            if (elf_fpread(ctx, (void *)(p->debugline), elf_sh.size, elf_sh.offset) != elf_sh.size)
+            return EL_EIO;
+            make_addr_line(ctx,p->debugline,elf_sh.size);
+            // sprint("\n");
+            // for(int i = 0; i <= 10; i++){
+            //     sprint(p->dir[i]);
+            //     sprint("\n");
+            // }
+            
+        } 
+
+  }
   return EL_OK;
 }
 
@@ -284,4 +321,11 @@ void load_bincode_from_host_elf(process *p) {
   spike_file_close( info.f );
 
   sprint("Application program entry point (virtual address): 0x%lx\n", p->trapframe->epc);
+}
+
+
+uint64 get_fun_name(uint64 depth, uint64 s0){
+  
+
+  return 0;
 }

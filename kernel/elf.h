@@ -51,6 +51,16 @@ typedef struct elf_sect_header_t{
     uint64 entsize;
 } elf_sect_header;
 
+
+typedef struct {
+	uint32	st_name;
+	unsigned char	st_info;
+	unsigned char	st_other;
+	uint16	st_shndx;
+	uint64	st_value;
+	uint64	st_size;
+} Elf_symtab;//64位
+
 // compilation units header (in debug line section)
 typedef struct __attribute__((packed)) {
     uint32 length;
